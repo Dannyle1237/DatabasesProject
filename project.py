@@ -21,12 +21,31 @@ def printQuery(query):
       cars_conn = sqlite3.connect('cars.db')
       c = cars_conn.cursor()
       c.execute(query)
-      print("\nQuery:\n" + str(c.fetchall()))
+      print("\nQuery:")
+      for item in c.fetchall():
+            print(str(item))
       cars_conn.close()
 
-cars_conn = sqlite3.connect('cars.db')
-c = cars_conn.cursor()
-#CREATE TABLES STATEMENTS
+def addColumn(table_name, column_name, column_def):
+      cars_conn = sqlite3.connect('cars.db')
+      c = cars_conn.cursor()
+      c.execute(" ALTER TABLE " + table_name + " ADD " + column_name + " " + column_def )
+      cars_conn.commit()
+      cars_conn.close()
+
+def modifyReturned():
+      cars_conn = sqlite3.connect('cars.db')
+      c = cars_conn.cursor()
+      c.execute('''UPDATE RENTAL 
+                   SET Returned = CASE
+                        WHEN PaymentDate = 'NULL' THEN 0
+                        ELSE 1
+                   END''')
+      cars_conn.commit()
+      cars_conn.close()
+# #CREATE TABLES STATEMENTS
+# cars_conn = sqlite3.connect('cars.db')
+# c = cars_conn.cursor()
 # c.execute(''' CREATE TABLE Customer( 
 #                 CustID int,Name varchar(25), 
 #                 Phone varchar(25), 
@@ -54,11 +73,11 @@ c = cars_conn.cursor()
 #                 TotalAmount int,
 #                 PaymentDate varchar(15));''')
 
-#INSERT CSV DATA
-# customer_file = open('./data/CUSTOMER.csv')
-# rate_file = open('./data/RATE.csv')
-# rental_file = open('./data/RENTAL.csv')
-# vehicle_file = open('./data/VEHICLE.csv')
+# #INSERT CSV DATA
+# customer_file = open('./data/CUSTOMER.csv', 'r')
+# rate_file = open('./data/RATE.csv', 'r')
+# rental_file = open('./data/RENTAL.csv', 'r')
+# vehicle_file = open('./data/VEHICLE.csv', 'r')
 # files = []
 # files.append(customer_file)
 # files.append(rate_file)
@@ -66,6 +85,7 @@ c = cars_conn.cursor()
 # files.append(vehicle_file)
 # for file in files:
 #       data = csv.reader(file)
+#       next(data)
 #       if(os.path.basename(file.name) == "CUSTOMER.csv"):
 #             insert_records = "INSERT INTO Customer VALUES(?, ?, ?)"
 #       elif(os.path.basename(file.name) == "RATE.csv"):
@@ -75,14 +95,25 @@ c = cars_conn.cursor()
 #       elif(os.path.basename(file.name) == "VEHICLE.csv"):
 #             insert_records = "INSERT INTO Vehicle VALUES(?, ?, ?, ?, ?)"
 #       c.executemany(insert_records, data)
-      
-printQuery('''SELECT * FROM Customer''')
-printQuery('''SELECT * FROM Rate''')
-printQuery('''SELECT * FROM Rental''')
-printQuery('''SELECT * FROM Vehicle''')
+# cars_conn.commit()
+# cars_conn.close()
 
-cars_conn.commit()
-cars_conn.close()
+#Code to print each table and check values
+# printQuery('''SELECT * FROM Customer''')
+# printQuery('''SELECT * FROM Rate''')
+# printQuery('''SELECT * FROM Rental''')
+# printQuery('''SELECT * FROM Vehicle''')
+# printQuery('''SELECT COUNT(*) FROM CUSTOMER''')
+# printQuery('''SELECT COUNT(*) FROM Rate''')
+# printQuery('''SELECT COUNT(*) FROM Rental''')
+# printQuery('''SELECT COUNT(*) FROM Vehicle''')
+
+#Task 1 Query 1
+# addColumn("RENTAL", "Returned", "int")
+# modifyReturned()
+# printQuery('''SELECT * FROM Rental''')
+
+
 
 #executes tinker components
 root.mainloop()
