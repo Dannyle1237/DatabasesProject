@@ -14,6 +14,7 @@ import os
 
 from datetime import date
 from datetime import datetime
+import locale
 
 root = Tk()
 
@@ -60,16 +61,19 @@ add_customer = Frame(notebook,width=800,height=600)
 add_vehicle = Frame(notebook,width=800,height=600)
 add_rental = Frame(notebook,width=800,height=600)
 return_rental = Frame(notebook,width=800,height=600)
+search_customer = Frame(notebook,width=800,height=600)
 
 add_customer.pack(fill="both",expand=1)
 add_vehicle.pack(fill="both",expand=1)
 add_rental.pack(fill="both",expand=1)
 return_rental.pack(fill="both",expand=1)
+search_customer.pack(fill="both",expand=1)
 
 notebook.add(add_customer,text="ADD Customer")
 notebook.add(add_vehicle,text="ADD Vehicle")
 notebook.add(add_rental,text="ADD Rental")
 notebook.add(return_rental,text="Return Rental")
+notebook.add(search_customer,text="Search Customer")
 
 
 #Requirment 3
@@ -212,10 +216,71 @@ vd_label = Label(return_rental, text = 'Vehicle Type:').grid(row =1, column = 0)
 veh_year = Entry(return_rental,width=4)
 veh_year.grid(row = 1, column =4)
 year_label = Label(return_rental, text = 'Vehicle Year:').grid(row =1, column = 3)
-Submit =  Button(return_rental,text="Search",command=get_amount).grid(row =2, column = 0)
+search =  Button(return_rental,text="Search",command=get_amount).grid(row =2, column = 0)
 
 #End of Requirement 4
 
+#Requirement 5a
+
+
+amount_labels_arr = []
+
+def destroy_labels():
+      global amount_labels_arr
+      for label in amount_labels_arr:
+                  label.grid_forget()
+                  label.destroy()
+                  
+
+def find_customer():
+      locale.setlocale(locale.LC_ALL, '')
+      fc_conn = sqlite3.connect('cars.db')
+      fc_cur = fc_conn.cursor()
+
+      try:
+            fc_cur.execute("""DROP View vRentalInfo;""")
+      except:
+            pass
+      query2()
+     
+      try:
+            destroy_labels()
+      except:
+            pass
+
+      percent = "%"
+      like_name = percent +name_search.get() + percent
+      id_val = None
+      fc_cur.execute("""SELECT CustomerID, CustomerName, RentalBalance FROM vRentalInfo Where CustomerID=? OR CustomerName LIKE ? ORDER BY RentalBalance DESC;""",
+      (id_val,like_name))
+
+      customerBalance = fc_cur.fetchall()
+      row_count = 2
+      
+      global amount_labels_arr
+      for i in customerBalance:
+            if i[2] == None:
+                 amount_label = Label(search_customer,text ="$0.00")
+                 amount_label.grid(row=row_count,column=0)
+                 amount_labels_arr.append(amount_label)
+            else:
+                  query_str = str(i[0]) + " " + i[1] + " " + str(locale.currency(i[2], grouping=True))
+                  amount_label = Label(search_customer,text = query_str )
+                  amount_label.grid(row=row_count,column=0)
+                  amount_labels_arr.append(amount_label)
+            row_count+=1
+      fc_conn.commit()
+      fc_conn.close()
+      
+name_search = Entry(search_customer,width=15)
+name_search.grid(row = 0, column = 1,)
+search_name_label = Label(search_customer, text = 'Name:').grid(row =0, column = 0)
+id_search = Entry(search_customer,width=3)
+id_search.grid(row = 0, column = 3)
+id_search_label = Label(search_customer, text = 'ID:').grid(row =0, column = 2)
+search_customer_button =  Button(search_customer,text="Search",command=find_customer).grid(row =1, column = 0)
+
+#End of Requirement 5a
 
 # #CREATE TABLES STATEMENTS
 # cars_conn = sqlite3.connect('cars.db')
@@ -289,39 +354,40 @@ Submit =  Button(return_rental,text="Search",command=get_amount).grid(row =2, co
 
 #query 2
 
-# cars_conn = sqlite3.connect('cars.db')
-# c = cars_conn.cursor()
-# vRentalInfo=''' CREATE VIEW vRentalInfo AS 
-# SELECT 
-# OrderDate,
-# StartDate,
-# ReturnDate,
-# RentalType * qty AS TotalDays,
-# V.VehicleID AS VIN,
-# CASE
-# WHEN V.Type=1 THEN 'Compact'
-# WHEN V.Type=2 THEN 'Medium'
-# WHEN V.Type=3 THEN 'Large'
-# WHEN V.Type=4 THEN 'SUV'
-# WHEN V.Type=5 THEN 'Truck'
-# WHEN V.Type=6 THEN 'VAN'
-# END AS Type,
-# CASE
-# WHEN V.Category=0 THEN 'Basic'
-# WHEN V.Category=1 THEN 'Luxury'
-# END AS Category,
-# C.CustID AS CustomerID,
-# Name AS CustomerName,
-# TotalAmount AS OrderAmount,
-# CASE 
-# WHEN PaymentDate='NULL' THEN TotalAmount
-# WHEN PaymentDate!='NULL' THEN 0
-# END AS RentalBalance
-# FROM Rental,VEHICLE AS V, CUSTOMER AS C
-# WHERE C.CustID=Rental.CustID 
-# AND V.VehicleID=Rental.VehicleID
-# ORDER BY StartDate ASC'''
-# c.execute(vRentalInfo)
+def query2():
+      cars_conn = sqlite3.connect('cars.db')
+      c = cars_conn.cursor()
+      vRentalInfo=''' CREATE VIEW vRentalInfo AS 
+      SELECT 
+      OrderDate,
+      StartDate,
+      ReturnDate,
+      RentalType * qty AS TotalDays,
+      V.VehicleID AS VIN,
+      CASE
+      WHEN V.Type=1 THEN 'Compact'
+      WHEN V.Type=2 THEN 'Medium'
+      WHEN V.Type=3 THEN 'Large'
+      WHEN V.Type=4 THEN 'SUV'
+      WHEN V.Type=5 THEN 'Truck'
+      WHEN V.Type=6 THEN 'VAN'
+      END AS Type,
+      CASE
+      WHEN V.Category=0 THEN 'Basic'
+      WHEN V.Category=1 THEN 'Luxury'
+      END AS Category,
+      C.CustID AS CustomerID,
+      Name AS CustomerName,
+      TotalAmount AS OrderAmount,
+      CASE 
+      WHEN PaymentDate='NULL' THEN TotalAmount
+      WHEN PaymentDate!='NULL' THEN 0
+      END AS RentalBalance
+      FROM Rental,VEHICLE AS V, CUSTOMER AS C
+      WHERE C.CustID=Rental.CustID 
+      AND V.VehicleID=Rental.VehicleID
+      ORDER BY StartDate ASC'''
+      c.execute(vRentalInfo)
 
 #end of query 2
 
