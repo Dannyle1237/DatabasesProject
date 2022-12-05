@@ -239,4 +239,41 @@ Submit =  Button(add_rental,text="Submit",command=make_rental).grid(row =6, colu
 # modifyReturned()
 # printQuery('''SELECT * FROM Rental''')
 
+#query 2
+cars_conn = sqlite3.connect('cars.db')
+c = cars_conn.cursor()
+vRentalInfo=''' CREATE VIEW vRentalInfo AS 
+SELECT 
+OrderDate,
+StartDate,
+ReturnDate,
+RentalType * qty AS TotalDays,
+V.VehicleID AS VIN,
+CASE
+WHEN V.Type=1 THEN 'Compact'
+WHEN V.Type=2 THEN 'Medium'
+WHEN V.Type=3 THEN 'Large'
+WHEN V.Type=4 THEN 'SUV'
+WHEN V.Type=5 THEN 'Truck'
+WHEN V.Type=6 THEN 'VAN'
+END AS Type,
+CASE
+WHEN V.Category=0 THEN 'Basic'
+WHEN V.Category=1 THEN 'Luxury'
+END AS Category,
+C.CustID AS CustomerID,
+Name AS CustomerName,
+TotalAmount AS OrderAmount,
+CASE 
+WHEN PaymentDate='NULL' THEN TotalAmount
+WHEN PaymentDate!='NULL' THEN 0
+END AS RentalBalance
+FROM Rental,VEHICLE AS V, CUSTOMER AS C
+WHERE C.CustID=Rental.CustID 
+AND V.VehicleID=Rental.VehicleID
+ORDER BY StartDate ASC'''
+c.execute(vRentalInfo)
+
+#end of query 2
+
 root.mainloop()
