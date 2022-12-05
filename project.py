@@ -19,7 +19,7 @@ root = Tk()
 
 root.title('Address Book')
 
-root.geometry("600x600")
+root.geometry("800x600")
 
 
 #Statement to quickly print our queries (ex: query='''SELECT * From Customer''')
@@ -52,28 +52,27 @@ def modifyReturned():
 
 
 
-
-
-
 # For tabs
 notebook = ttk.Notebook(root)
 notebook.grid()
 
-add_customer = Frame(notebook,width=600,height=600)
-add_vehicle = Frame(notebook,width=600,height=600)
-add_rental = Frame(notebook,width=600,height=600)
+add_customer = Frame(notebook,width=800,height=600)
+add_vehicle = Frame(notebook,width=800,height=600)
+add_rental = Frame(notebook,width=800,height=600)
+return_rental = Frame(notebook,width=800,height=600)
 
 add_customer.pack(fill="both",expand=1)
 add_vehicle.pack(fill="both",expand=1)
 add_rental.pack(fill="both",expand=1)
+return_rental.pack(fill="both",expand=1)
 
 notebook.add(add_customer,text="ADD Customer")
 notebook.add(add_vehicle,text="ADD Vehicle")
 notebook.add(add_rental,text="ADD Rental")
+notebook.add(return_rental,text="Return Rental")
 
 
-
-#Query3
+#Requirment 3
 def available_cars():
       ac_conn = sqlite3.connect('cars.db')
       ac_cur = ac_conn.cursor()
@@ -165,8 +164,57 @@ cust_label = Label(add_rental, text = 'CustID:').grid(row =5, column = 0)
 
 Submit =  Button(add_rental,text="Submit",command=make_rental).grid(row =6, column = 0)
 
-# END of query 3
+# END of requirement 3
 
+#Requiement 4
+def pay_rental(amount):
+      ga_conn = sqlite3.connect('cars.db')
+      ga_cur = ga_conn.cursor()
+      ga_cur.execute("""UPDATE Rental SET returned = 1 WHERE CustID = ?
+      AND VehicleID = ? AND ReturnDate = ?; """,(amount[0][1],amount[0][2],return_date.get()))
+      finshed_label = Label(return_rental,text="Finished Paying ")
+      finshed_label.grid(row=5,column=0)
+      ga_conn.commit()
+      ga_conn.close()
+
+def get_amount():
+      ga_conn = sqlite3.connect('cars.db')
+      ga_cur = ga_conn.cursor()
+      
+      ga_cur.execute("""SELECT TotalAmount,Rental.CustID,VehicleID FROM Rental WHERE Rental.CustID = (Select 
+      Customer.CustID FROM Customer Where Customer.Name = ?) AND Rental.VehicleID = (
+            SELECT Vehicle.VehicleID FROM Vehicle WHERE Description = ? AND Year = ?) AND ReturnDate = ?
+            AND Returned != 1; """
+            ,(cust_name.get(),veh_description.get(),int(veh_year.get()),return_date.get()))
+
+      amount = ga_cur.fetchall()
+      print(amount)
+      amount_label = Label(return_rental,text="Amount =" +str(amount[0][0]) )
+      amount_label.grid(row=3,column=0)
+      Button(return_rental,text="Pay",command=lambda: pay_rental(amount)).grid(row=4, column = 0)
+      ga_conn.commit()
+      ga_conn.close()
+
+     
+      
+      
+
+
+return_date = Entry(return_rental,width=10)
+return_date.grid(row = 0, column = 1,)
+rd_label = Label(return_rental, text = 'Return Date:').grid(row =0, column = 0)
+cust_name = Entry(return_rental,width=10)
+cust_name.grid(row = 0, column = 3)
+name_label = Label(return_rental, text = 'Name:').grid(row =0, column = 2)
+veh_description = Entry(return_rental,width=10)
+veh_description.grid(row = 1, column = 1)
+vd_label = Label(return_rental, text = 'Vehicle Type:').grid(row =1, column = 0)
+veh_year = Entry(return_rental,width=4)
+veh_year.grid(row = 1, column =4)
+year_label = Label(return_rental, text = 'Vehicle Year:').grid(row =1, column = 3)
+Submit =  Button(return_rental,text="Search",command=get_amount).grid(row =2, column = 0)
+
+#End of Requirement 4
 
 
 # #CREATE TABLES STATEMENTS
@@ -240,39 +288,40 @@ Submit =  Button(add_rental,text="Submit",command=make_rental).grid(row =6, colu
 # printQuery('''SELECT * FROM Rental''')
 
 #query 2
-cars_conn = sqlite3.connect('cars.db')
-c = cars_conn.cursor()
-vRentalInfo=''' CREATE VIEW vRentalInfo AS 
-SELECT 
-OrderDate,
-StartDate,
-ReturnDate,
-RentalType * qty AS TotalDays,
-V.VehicleID AS VIN,
-CASE
-WHEN V.Type=1 THEN 'Compact'
-WHEN V.Type=2 THEN 'Medium'
-WHEN V.Type=3 THEN 'Large'
-WHEN V.Type=4 THEN 'SUV'
-WHEN V.Type=5 THEN 'Truck'
-WHEN V.Type=6 THEN 'VAN'
-END AS Type,
-CASE
-WHEN V.Category=0 THEN 'Basic'
-WHEN V.Category=1 THEN 'Luxury'
-END AS Category,
-C.CustID AS CustomerID,
-Name AS CustomerName,
-TotalAmount AS OrderAmount,
-CASE 
-WHEN PaymentDate='NULL' THEN TotalAmount
-WHEN PaymentDate!='NULL' THEN 0
-END AS RentalBalance
-FROM Rental,VEHICLE AS V, CUSTOMER AS C
-WHERE C.CustID=Rental.CustID 
-AND V.VehicleID=Rental.VehicleID
-ORDER BY StartDate ASC'''
-c.execute(vRentalInfo)
+
+# cars_conn = sqlite3.connect('cars.db')
+# c = cars_conn.cursor()
+# vRentalInfo=''' CREATE VIEW vRentalInfo AS 
+# SELECT 
+# OrderDate,
+# StartDate,
+# ReturnDate,
+# RentalType * qty AS TotalDays,
+# V.VehicleID AS VIN,
+# CASE
+# WHEN V.Type=1 THEN 'Compact'
+# WHEN V.Type=2 THEN 'Medium'
+# WHEN V.Type=3 THEN 'Large'
+# WHEN V.Type=4 THEN 'SUV'
+# WHEN V.Type=5 THEN 'Truck'
+# WHEN V.Type=6 THEN 'VAN'
+# END AS Type,
+# CASE
+# WHEN V.Category=0 THEN 'Basic'
+# WHEN V.Category=1 THEN 'Luxury'
+# END AS Category,
+# C.CustID AS CustomerID,
+# Name AS CustomerName,
+# TotalAmount AS OrderAmount,
+# CASE 
+# WHEN PaymentDate='NULL' THEN TotalAmount
+# WHEN PaymentDate!='NULL' THEN 0
+# END AS RentalBalance
+# FROM Rental,VEHICLE AS V, CUSTOMER AS C
+# WHERE C.CustID=Rental.CustID 
+# AND V.VehicleID=Rental.VehicleID
+# ORDER BY StartDate ASC'''
+# c.execute(vRentalInfo)
 
 #end of query 2
 
