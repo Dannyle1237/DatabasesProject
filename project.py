@@ -11,6 +11,8 @@ from tkinter import ttk
 import csv
 import sqlite3
 import os
+import random
+import string
 
 from datetime import date
 from datetime import datetime
@@ -76,13 +78,12 @@ notebook.add(return_rental,text="Return Rental")
 notebook.add(search_customer,text="Search Customer")
 
 
-#Requirment 1
+#Requirement 1
 def add_newcustomer():
       cu_conn = sqlite3.connect('cars.db')
       cu_cur = cu_conn.cursor()
       cu_cur.execute( """INSERT INTO CUSTOMER (Name,Phone)
       VALUES(?,?)""",(Customer_name.get(),Customer_phone.get()))
-
       cu_conn.commit()
       cu_conn.close()
 
@@ -92,11 +93,76 @@ Customer_name.grid(row = 0, column = 1,)
 type_label1 = Label(add_customer, text = 'Name:').grid(row =0, column = 0)
 Customer_phone = Entry(add_customer,width=20)
 Customer_phone.grid(row = 3, column = 1,)
-type_label1 = Label(add_customer, text = 'phone:').grid(row =3, column = 0)
-Submit =  Button(add_customer,text="Submit",command=add_newcustomer).grid(row =6, column = 0)
+type_label1 = Label(add_customer, text = 'Phone:').grid(row =3, column = 0)
+Submit = Button(add_customer,text="Submit",command=add_newcustomer).grid(row =6, column = 0)
 
+#Requirement 2
+def insert_vehicle():
+      type_hmap ={
+            "Compact" : 1,
+            "Medium" : 2,
+            "Large" : 3,
+            "SUV" : 4,
+            "Truck" : 5,
+            "VAN" : 6
+      }
+      category_hmap = {
+            "Basic" : 0,
+            "Luxury" : 1
+      }
+      if(len(str(vehicle_year.get()))!= 4):
+            print("Cannot submit: Invalid Year")
+            return False
+      cars_conn = sqlite3.connect('cars.db')
+      cars_cur = cars_conn.cursor()
 
-#Requirment 3
+      #Generate 17 digit code not in DB already
+      cars_cur.execute('''SELECT VehicleID FROM Vehicle''')
+      curr_vIDs = cars_cur.fetchall()
+      vID = ''.join(random.choices(string.ascii_uppercase + string.digits, k=17))
+      while(curr_vIDs.count(vID) != 0):
+            vID = ''.join(random.choices(string.ascii_uppercase + string.digits, k=17))
+
+      cars_cur.execute(''' INSERT INTO VEHICLE
+      VALUES(?,?,?,?,?)''',(vID, vehicle_description.get(), vehicle_year.get(), type_hmap[type_selected.get()], category_hmap[category_selected.get()]))
+      print(cars_cur.fetchall())
+      cars_conn.commit()
+      cars_conn.close()
+#GUI 
+title = Label(add_vehicle, text="Add Vehicle Information").grid(row=0, column=5)
+vehicle_description = Entry(add_vehicle, width=10, justify="left")
+vehicle_description.grid(sticky=W, row = 1, column = 1)
+description_label = Label(add_vehicle, text = 'Enter Description:', justify="left").grid(sticky = W, row =1, column = 0)
+vehicle_year = Entry(add_vehicle, width=4, justify="left")
+vehicle_year.grid(sticky=W, row = 2, column = 1)
+year_label = Label(add_vehicle, text = 'Enter Year:', justify="left").grid(sticky = W, row =2, column = 0)
+
+type_options ={
+      "Compact",
+      "Medium",
+      "Large",
+      "SUV",
+      "Truck",
+      "VAN"
+}
+category_options ={
+      "Basic",
+      "Luxury"
+}
+type_selected = StringVar()
+type_selected.set("Compact")
+type_dropdown_menu = OptionMenu(add_vehicle, type_selected, *type_options)
+type_label = Label(add_vehicle, text='Select Type:', justify="left").grid(sticky = W, row=3, column=0)
+type_dropdown_menu.grid(sticky=W, row=3, column=1)
+category_selected = StringVar()
+category_selected.set("Basic")
+category_dropdown_menu = OptionMenu(add_vehicle, category_selected, *category_options)
+category_label = Label(add_vehicle, text='Select Category:', justify="left").grid(sticky=W, row=4, column=0)
+category_dropdown_menu.grid(row=4, column=1)
+vehicle_submit = Button(add_vehicle,text="Submit",command=(insert_vehicle))
+vehicle_submit.grid(row =5, column = 5)
+
+#Requirement 3
 def available_cars():
       ac_conn = sqlite3.connect('cars.db')
       ac_cur = ac_conn.cursor()
@@ -367,17 +433,17 @@ search_customer_button =  Button(search_customer,text="Search",command=find_cust
 # cars_conn.commit()
 # cars_conn.close()
 
-#Code to print each table and check values
+# #Code to print each table and check values
 # printQuery('''SELECT * FROM Customer''')
 # printQuery('''SELECT * FROM Rate''')
 # printQuery('''SELECT * FROM Rental''')
-# printQuery('''SELECT * FROM Vehicle''')
+#printQuery('''SELECT * FROM Vehicle''')
 # printQuery('''SELECT COUNT(*) FROM CUSTOMER''')
 # printQuery('''SELECT COUNT(*) FROM Rate''')
 # printQuery('''SELECT COUNT(*) FROM Rental''')
-# printQuery('''SELECT COUNT(*) FROM Vehicle''')
+#printQuery('''SELECT COUNT(*) FROM Vehicle''')
 
-#Task 1 Query 1
+# #Task 1 Query 1
 # addColumn("RENTAL", "Returned", "int")
 # modifyReturned()
 # printQuery('''SELECT * FROM Rental''')
