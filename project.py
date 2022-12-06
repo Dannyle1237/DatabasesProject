@@ -302,17 +302,20 @@ def get_amount():
 
 return_date = Entry(return_rental,width=10)
 return_date.grid(row = 0, column = 1,)
-rd_label = Label(return_rental, text = 'Return Date:').grid(row =0, column = 0)
+rd_label = Label(return_rental, text = 'Return Date:', justify="left").grid(sticky=W, row =0, column = 0)
+
 cust_name = Entry(return_rental,width=10)
-cust_name.grid(row = 0, column = 3)
-name_label = Label(return_rental, text = 'Name:').grid(row =0, column = 2)
+cust_name.grid(sticky=W, row = 0, column = 3)
+name_label = Label(return_rental, text = 'Name:').grid(sticky=W,row =0, column = 2)
+
 veh_description = Entry(return_rental,width=10)
 veh_description.grid(row = 1, column = 1)
-vd_label = Label(return_rental, text = 'Vehicle Type:').grid(row =1, column = 0)
-veh_year = Entry(return_rental,width=4)
-veh_year.grid(row = 1, column =4)
-year_label = Label(return_rental, text = 'Vehicle Year:').grid(row =1, column = 3)
-search =  Button(return_rental,text="Search",command=get_amount).grid(row =2, column = 0)
+vd_label = Label(return_rental, text = 'Vehicle Type:', justify="left").grid(sticky=W,row =1, column = 0)
+
+veh_year = Entry(return_rental,width=6)
+veh_year.grid(sticky=W, row = 1, column =3)
+year_label = Label(return_rental, text = 'Vehicle Year:', justify="left").grid(sticky=W, row =1, column = 2)
+search =  Button(return_rental,text="Search",command=get_amount, justify="center").grid(sticky=W,row =2, column = 0)
 
 #End of Requirement 4
 
