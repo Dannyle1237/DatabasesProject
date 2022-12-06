@@ -269,8 +269,18 @@ def find_customer():
             pass
 
       percent = "%"
-      like_name = percent +name_search.get() + percent
-      id_val = None
+      if name_search.get() == "":
+            like_name = None
+      else:
+            like_name = percent +name_search.get() + percent
+      
+      try:
+            id_val = int(id_search.get())
+      except:
+            id_val = None
+      
+      if like_name == None and id_val == None:
+            like_name = "%%"
       fc_cur.execute("""SELECT CustomerID, CustomerName, RentalBalance FROM vRentalInfo Where CustomerID=? OR CustomerName LIKE ? ORDER BY RentalBalance DESC;""",
       (id_val,like_name))
 
@@ -384,6 +394,7 @@ def query2():
       ReturnDate,
       RentalType * qty AS TotalDays,
       V.VehicleID AS VIN,
+      V.Description as Vehicle,
       CASE
       WHEN V.Type=1 THEN 'Compact'
       WHEN V.Type=2 THEN 'Medium'
