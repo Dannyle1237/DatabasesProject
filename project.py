@@ -337,10 +337,10 @@ def find_customer():
             pass
       query2()
      
-      try:
-            destroy_labels()
-      except:
-            pass
+      # try:
+      #       destroy_labels()
+      # except:
+      #       pass
 
       percent = "%"
       if name_search.get() == "":
@@ -358,32 +358,36 @@ def find_customer():
       fc_cur.execute("""SELECT CustomerID, CustomerName, RentalBalance FROM vRentalInfo Where CustomerID=? OR CustomerName LIKE ? ORDER BY RentalBalance DESC;""",
       (id_val,like_name))
 
-      customerBalance = fc_cur.fetchall()
-      print(customerBalance)
-      row_count = 2
+      customers_searched = fc_cur.fetchall()
+      print(customers_searched)
+      cust_search_list = ttk.Treeview(search_customer, column=("c1", "c2", "c3"), show='headings', height=20)
+      cust_search_list.column("# 1", anchor=W)
+      cust_search_list.heading("# 1", text="CustID")
+      cust_search_list.column("# 2", anchor=W)
+      cust_search_list.heading("# 2", text="Name")
+      cust_search_list.column("# 3", anchor=W)
+      cust_search_list.heading("# 3", text="Rental Balance")
+      count = 1
       
-      global amount_labels_arr
-      for i in customerBalance:
+      for i in customers_searched:
             if i[2] == None:
-                 amount_label = Label(search_customer,text ="$0.00")
-                 amount_label.grid(row=row_count,column=0)
-                 amount_labels_arr.append(amount_label)
+                 cust_search_list.insert('', 'end', text=str(count), values=(str(i[0]), str(i[1]), "$0.00"))
             else:
-                  query_str = str(i[0]) + " " + i[1] + " " + str(locale.currency(i[2], grouping=True))
-                  amount_label = Label(search_customer,text = query_str )
-                  amount_label.grid(row=row_count,column=0)
-                  amount_labels_arr.append(amount_label)
-            row_count+=1
+                  cust_search_list.insert('', 'end', text=str(count), values=(str(i[0]), str(i[1]), "$" + str(i[2])))
+            count+=1
+      cust_search_list.grid(row=2, column=0, columnspan = 3)
       fc_conn.commit()
       fc_conn.close()
-      
-name_search = Entry(search_customer,width=15)
-name_search.grid(row = 0, column = 1,)
-search_name_label = Label(search_customer, text = 'Name:').grid(row =0, column = 0)
-id_search = Entry(search_customer,width=3)
-id_search.grid(row = 0, column = 3)
-id_search_label = Label(search_customer, text = 'ID:').grid(row =0, column = 2)
-search_customer_button =  Button(search_customer,text="Search",command=find_customer).grid(row =1, column = 0)
+
+search_name_label = Label(search_customer, text = 'Name:', justify="left").grid(sticky = W, row =0, column = 0)
+name_search = Entry(search_customer,width=15, justify="left")
+name_search.grid(sticky = W, row = 0, column = 1)
+
+id_search_label = Label(search_customer, text = 'ID:', justify="left").grid(sticky=W, row =1, column = 0)
+id_search = Entry(search_customer,width=10, justify="left")
+id_search.grid(sticky = W, row = 1, column = 1)
+
+search_customer_button =  Button(search_customer,text="Search",command=find_customer).grid(row =1, column = 2)
 
 #End of Requirement 5a
 
@@ -398,10 +402,6 @@ def search_vehicles():
       except:
             pass
       query2()
-      try:
-            destroy_labels()
-      except:
-            pass
 
       percent = "%"
       if description_search.get() == "":
@@ -409,33 +409,48 @@ def search_vehicles():
       else:
             like_desc = percent +description_search.get() + percent
       
-      try:
-            vin_val = str(vin_search.get())
-      except:
+      if vin_search.get() == "":
             vin_val = None
+      else:
+            vin_val = vin_search.get()
       
       if like_desc == None and vin_val == None:
             like_desc = "%%"
-      fv_cur.execute("""SELECT Vehicle.VehicleID,Description,(Sum(TotalAmount)/(Sum(Qty*RentalType))) AS Average 
-      FROM Rental LEFT Join Vehicle ON (
-      Vehicle.VehicleID = Rental.VehicleID AND Vehicle.vehicleId= ? AND Vehicle.description LIKE ?) 
-      GROUP BY Vehicle.vehicleId ORDER BY Average DESC;"""
-      ,( vin_val, like_desc))
-      print(fv_cur.fetchall())
+      fv_cur.execute("""SELECT VIN, Vehicle,
+      (SELECT ROUND(SUM(Averages)/Count(Averages), 2) FROM 
+      (SELECT (CAST(R.TotalAmount as REAL)/(R.Qty*R.RentalType)) as Averages FROM Rental as R WHERE R.VehicleID=VR.VIN)) as Average
+      FROM vRentalInfo as VR Where VIN=? OR Vehicle LIKE ?;""",
+      (vin_val,like_desc))
+
+      vehicles_searched = fv_cur.fetchall()
+      #print(vehicles_searched)
+      vehicle_search_list = ttk.Treeview(search_vehicle, column=("c1", "c2", "c3"), show='headings', height=20)
+      vehicle_search_list.column("# 1", anchor=W)
+      vehicle_search_list.heading("# 1", text="VIN")
+      vehicle_search_list.column("# 2", anchor=W)
+      vehicle_search_list.heading("# 2", text="Description")
+      vehicle_search_list.column("# 3", anchor=W)
+      vehicle_search_list.heading("# 3", text="Daily")
+      
+      count = 1
+      for vehicle in vehicles_searched:
+            vehicle_search_list.insert('', 'end', text=str(count), values=(str(vehicle[0]), str(vehicle[1]), "$" + str(vehicle[2])))
+            count += 1
+      vehicle_search_list.grid(row=3, column=0, columnspan=5)
       fv_conn.commit()
       fv_conn.close()
 
-vehicle_search_title = Label(search_vehicle, text="Search Vehicle", justify="center").grid(row=0, column=0, columnspan=3)
+vehicle_search_title = Label(search_vehicle, text="Search Vehicle", justify="center").grid(row=0, column=0)
 
-vin_search_label = Label(search_vehicle, text="Vin").grid(row=1, column=0)
+vin_search_label = Label(search_vehicle, text="Vin", justify="left").grid(sticky=W, row=1, column=0)
 vin_search = Entry(search_vehicle, width=20)
 vin_search.grid(row=1, column=1)
 
-description_search_label = Label(search_vehicle, text="Description").grid(row=2, column=0)
+description_search_label = Label(search_vehicle, text="Description", justify="left").grid(sticky=W,row=2, column=0)
 description_search = Entry(search_vehicle, width=20)
 description_search.grid(row=2, column=1)
 
-submit_vehicle_search = Button(search_vehicle, text="Search", command=search_vehicles).grid(row= 3, column=0)
+submit_vehicle_search = Button(search_vehicle, text="Search", command=search_vehicles, justify="left").grid(sticky=W,row= 2, column=2)
 
 # #CREATE TABLES STATEMENTS
 # cars_conn = sqlite3.connect('cars.db')
