@@ -359,6 +359,7 @@ def find_customer():
       (id_val,like_name))
 
       customerBalance = fc_cur.fetchall()
+      print(customerBalance)
       row_count = 2
       
       global amount_labels_arr
@@ -387,7 +388,54 @@ search_customer_button =  Button(search_customer,text="Search",command=find_cust
 #End of Requirement 5a
 
 #Requirement 5b
+def search_vehicles():
+      locale.setlocale(locale.LC_ALL, '')
+      fv_conn = sqlite3.connect('cars.db')
+      fv_cur = fv_conn.cursor()
 
+      try:
+            fv_cur.execute("""DROP View vRentalInfo;""")
+      except:
+            pass
+      query2()
+      try:
+            destroy_labels()
+      except:
+            pass
+
+      percent = "%"
+      if description_search.get() == "":
+            like_desc = None
+      else:
+            like_desc = percent +description_search.get() + percent
+      
+      try:
+            vin_val = str(vin_search.get())
+      except:
+            vin_val = None
+      
+      if like_desc == None and vin_val == None:
+            like_desc = "%%"
+      fv_cur.execute("""SELECT Vehicle.VehicleID,Description,(Sum(TotalAmount)/(Sum(Qty*RentalType))) AS Average 
+      FROM Rental LEFT Join Vehicle ON (
+      Vehicle.VehicleID = Rental.VehicleID AND Vehicle.vehicleId= ? AND Vehicle.description LIKE ?) 
+      GROUP BY Vehicle.vehicleId ORDER BY Average DESC;"""
+      ,( vin_val, like_desc))
+      print(fv_cur.fetchall())
+      fv_conn.commit()
+      fv_conn.close()
+
+vehicle_search_title = Label(search_vehicle, text="Search Vehicle", justify="center").grid(row=0, column=0, columnspan=3)
+
+vin_search_label = Label(search_vehicle, text="Vin").grid(row=1, column=0)
+vin_search = Entry(search_vehicle, width=20)
+vin_search.grid(row=1, column=1)
+
+description_search_label = Label(search_vehicle, text="Description").grid(row=2, column=0)
+description_search = Entry(search_vehicle, width=20)
+description_search.grid(row=2, column=1)
+
+submit_vehicle_search = Button(search_vehicle, text="Search", command=search_vehicles).grid(row= 3, column=0)
 
 # #CREATE TABLES STATEMENTS
 # cars_conn = sqlite3.connect('cars.db')
