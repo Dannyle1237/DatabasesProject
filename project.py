@@ -107,12 +107,15 @@ notebook.add(search_customer,text="Search Customer")
 notebook.add(search_vehicle,text="Search Vehicle")
 
 
-#Requirement 1
+#Requirment 1
 def add_newcustomer():
       cu_conn = sqlite3.connect('cars.db')
       cu_cur = cu_conn.cursor()
-      cu_cur.execute( """INSERT INTO CUSTOMER (Name,Phone)
-      VALUES(?,?)""",(Customer_name.get(),Customer_phone.get()))
+    
+      cu_cur.execute( """INSERT INTO CUSTOMER (Name,Phone,CustID)
+      VALUES(?,?,(SELECT MAX(CustID)
+      FROM CUSTOMER)+1)""",(Customer_name.get(),Customer_phone.get()))
+
       cu_conn.commit()
       cu_conn.close()
 
@@ -122,8 +125,8 @@ Customer_name.grid(row = 0, column = 1,)
 type_label1 = Label(add_customer, text = 'Name:').grid(row =0, column = 0)
 Customer_phone = Entry(add_customer,width=20)
 Customer_phone.grid(row = 3, column = 1,)
-type_label1 = Label(add_customer, text = 'Phone:').grid(row =3, column = 0)
-Submit = Button(add_customer,text="Submit",command=add_newcustomer).grid(row =6, column = 0)
+type_label1 = Label(add_customer, text = 'phone:').grid(row =3, column = 0)
+Submit =  Button(add_customer,text="Submit",command=add_newcustomer).grid(row =6, column = 0)
 
 #Requirement 2
 def insert_vehicle():
