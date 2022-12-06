@@ -24,6 +24,32 @@ root.title('Address Book')
 
 root.geometry("800x600")
 
+#Hashmaps for type and category
+type_hmap ={
+      "Compact" : 1,
+      "Medium" : 2,
+      "Large" : 3,
+      "SUV" : 4,
+      "Truck" : 5,
+      "VAN" : 6
+}
+category_hmap = {
+      "Basic" : 0,
+      "Luxury" : 1
+}
+#options for type and category, mainly for dropdown lists
+type_options ={
+      "Compact",
+      "Medium",
+      "Large",
+      "SUV",
+      "Truck",
+      "VAN"
+}
+category_options ={
+      "Basic",
+      "Luxury"
+}
 
 #Statement to quickly print our queries (ex: query='''SELECT * From Customer''')
 def printQuery(query):
@@ -64,18 +90,21 @@ add_vehicle = Frame(notebook,width=800,height=600)
 add_rental = Frame(notebook,width=800,height=600)
 return_rental = Frame(notebook,width=800,height=600)
 search_customer = Frame(notebook,width=800,height=600)
+search_vehicle = Frame(notebook, width=800,height=600)
 
 add_customer.pack(fill="both",expand=1)
 add_vehicle.pack(fill="both",expand=1)
 add_rental.pack(fill="both",expand=1)
 return_rental.pack(fill="both",expand=1)
 search_customer.pack(fill="both",expand=1)
+search_vehicle.pack(fill="both",expand=1)
 
 notebook.add(add_customer,text="ADD Customer")
 notebook.add(add_vehicle,text="ADD Vehicle")
 notebook.add(add_rental,text="ADD Rental")
 notebook.add(return_rental,text="Return Rental")
 notebook.add(search_customer,text="Search Customer")
+notebook.add(search_vehicle,text="Search Vehicle")
 
 
 #Requirement 1
@@ -98,18 +127,6 @@ Submit = Button(add_customer,text="Submit",command=add_newcustomer).grid(row =6,
 
 #Requirement 2
 def insert_vehicle():
-      type_hmap ={
-            "Compact" : 1,
-            "Medium" : 2,
-            "Large" : 3,
-            "SUV" : 4,
-            "Truck" : 5,
-            "VAN" : 6
-      }
-      category_hmap = {
-            "Basic" : 0,
-            "Luxury" : 1
-      }
       if(len(str(vehicle_year.get()))!= 4):
             print("Cannot submit: Invalid Year")
             return False
@@ -125,7 +142,6 @@ def insert_vehicle():
 
       cars_cur.execute(''' INSERT INTO VEHICLE
       VALUES(?,?,?,?,?)''',(vID, vehicle_description.get(), vehicle_year.get(), type_hmap[type_selected.get()], category_hmap[category_selected.get()]))
-      print(cars_cur.fetchall())
       cars_conn.commit()
       cars_conn.close()
 #GUI 
@@ -137,28 +153,18 @@ vehicle_year = Entry(add_vehicle, width=4, justify="left")
 vehicle_year.grid(sticky=W, row = 2, column = 1)
 year_label = Label(add_vehicle, text = 'Enter Year:', justify="left").grid(sticky = W, row =2, column = 0)
 
-type_options ={
-      "Compact",
-      "Medium",
-      "Large",
-      "SUV",
-      "Truck",
-      "VAN"
-}
-category_options ={
-      "Basic",
-      "Luxury"
-}
 type_selected = StringVar()
 type_selected.set("Compact")
 type_dropdown_menu = OptionMenu(add_vehicle, type_selected, *type_options)
 type_label = Label(add_vehicle, text='Select Type:', justify="left").grid(sticky = W, row=3, column=0)
 type_dropdown_menu.grid(sticky=W, row=3, column=1)
 category_selected = StringVar()
+
 category_selected.set("Basic")
 category_dropdown_menu = OptionMenu(add_vehicle, category_selected, *category_options)
 category_label = Label(add_vehicle, text='Select Category:', justify="left").grid(sticky=W, row=4, column=0)
 category_dropdown_menu.grid(row=4, column=1)
+
 vehicle_submit = Button(add_vehicle,text="Submit",command=(insert_vehicle))
 vehicle_submit.grid(row =5, column = 5)
 
@@ -170,7 +176,7 @@ def available_cars():
       Vehicle.Year,Vehicle.Type,Vehicle.Category 
       FROM Vehicle,Rental WHERE VEHICLE.Type = ? AND 
       Vehicle.Category = ? AND (( ? > Rental.ReturnDate) 
-      OR (? < Rental.StartDate));""",(vehicle_type.get(),vehicle_category.get(),
+      OR (? < Rental.StartDate));""",( type_hmap[rental_type_selected.get()],category_hmap[rental_category_selected.get()],
       start_date.get(),end_date.get(),))
       
       query = ac_cur.fetchall()
@@ -178,7 +184,6 @@ def available_cars():
       for rental in query:
             car_list.insert(0,rental)
 
-     
       ac_conn.commit()
       ac_conn.close()
 
@@ -222,23 +227,28 @@ def make_rental():
       mr_conn.commit()
       mr_conn.close()
 
+rental_type_selected = StringVar()
+rental_type_selected.set("Compact")
+vehicle_type = OptionMenu(add_rental, rental_type_selected, *type_options)
+vehicle_type.grid(sticky=W, row = 0, column = 1)
+type_label = Label(add_rental, text = 'Type:', justify="right").grid(sticky=W, row =0, column = 0)
 
-vehicle_type = Entry(add_rental,width=1)
-vehicle_type.grid(row = 0, column = 1,)
-type_label = Label(add_rental, text = 'Type:').grid(row =0, column = 0)
-vehicle_category = Entry(add_rental,width=1)
-vehicle_category.grid(row = 0, column = 3)
-category_label = Label(add_rental, text = 'Category:').grid(row =0, column = 2)
-start_date = Entry(add_rental,width=10)
-start_date.grid(row = 1, column = 1)
-start_label = Label(add_rental, text = 'Start Date:').grid(row =1, column = 0)
-end_date = Entry(add_rental,width=10)
+rental_category_selected = StringVar()
+rental_category_selected.set("Basic")
+vehicle_category = OptionMenu(add_rental, rental_category_selected, *category_options)
+vehicle_category.grid(sticky=W, row = 0, column = 3)
+category_label = Label(add_rental, text = 'Category:', justify="right").grid(sticky=W, row =0, column = 2)
+
+start_date = Entry(add_rental,width=10, justify="left")
+start_date.grid(sticky=W, row = 1, column = 1)
+start_label = Label(add_rental, text = 'Start Date:', justify="left").grid(sticky=W, row =1, column = 0)
+end_date = Entry(add_rental,width=10, justify="left")
 end_date.grid(row = 1, column = 3)
-end_label = Label(add_rental, text = 'Return Date Date:').grid(row =1, column = 2)
+end_label = Label(add_rental, text = 'Return Date:', justify="left").grid(sticky=W, row =1, column = 2)
 format =  Label(add_rental, text = 'Format: year-mm-dd').grid(row =1, column = 4)
-Search = Button(add_rental,text="Search",command=available_cars).grid(row =2, column = 0)
+Search = Button(add_rental,text="Search",command=available_cars).grid(row =2, column = 1)
 car_list = Listbox(add_rental,width=50)
-car_list.grid(row =3,column=0)
+car_list.grid(row =3,column=0, columnspan=3)
 
 which_payment = IntVar()
 weekly = IntVar()
@@ -248,11 +258,11 @@ check_pay.grid(row=4,column=0)
 check_weekly= Checkbutton(add_rental,text = "Weekly Rate?",variable=weekly)
 check_weekly.grid(row=4,column=1)
 
-cust_id = Entry(add_rental,width=3)
-cust_id.grid(row = 5, column = 1)
-cust_label = Label(add_rental, text = 'CustID:').grid(row =5, column = 0)
+cust_id = Entry(add_rental,width=10, justify="left")
+cust_id.grid(sticky=W, row = 5, column = 1)
+cust_label = Label(add_rental, text = 'CustID:', justify="left").grid(sticky=W, row =5, column = 0)
 
-Submit =  Button(add_rental,text="Submit",command=make_rental).grid(row =6, column = 0)
+Submit =  Button(add_rental,text="Submit",command=make_rental, justify="center").grid(row =6, column = 0, columnspan=3)
 
 # END of requirement 3
 
@@ -307,8 +317,6 @@ search =  Button(return_rental,text="Search",command=get_amount).grid(row =2, co
 #End of Requirement 4
 
 #Requirement 5a
-
-
 amount_labels_arr = []
 
 def destroy_labels():
@@ -378,6 +386,9 @@ search_customer_button =  Button(search_customer,text="Search",command=find_cust
 
 #End of Requirement 5a
 
+#Requirement 5b
+
+
 # #CREATE TABLES STATEMENTS
 # cars_conn = sqlite3.connect('cars.db')
 # c = cars_conn.cursor()
@@ -434,14 +445,14 @@ search_customer_button =  Button(search_customer,text="Search",command=find_cust
 # cars_conn.close()
 
 # #Code to print each table and check values
-# printQuery('''SELECT * FROM Customer''')
+#printQuery('''SELECT * FROM Customer''')
 # printQuery('''SELECT * FROM Rate''')
 # printQuery('''SELECT * FROM Rental''')
-#printQuery('''SELECT * FROM Vehicle''')
+# printQuery('''SELECT * FROM Vehicle''')
 # printQuery('''SELECT COUNT(*) FROM CUSTOMER''')
 # printQuery('''SELECT COUNT(*) FROM Rate''')
 # printQuery('''SELECT COUNT(*) FROM Rental''')
-#printQuery('''SELECT COUNT(*) FROM Vehicle''')
+# printQuery('''SELECT COUNT(*) FROM Vehicle''')
 
 # #Task 1 Query 1
 # addColumn("RENTAL", "Returned", "int")
