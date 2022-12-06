@@ -3,7 +3,7 @@ import csv
 import os
 
 def printQuery(query):
-      cars_conn = sqlite3.connect('cars.db')
+      cars_conn = sqlite3.connect('CarRental.db')
       c = cars_conn.cursor()
       c.execute(query)
       print("\nQuery:")
@@ -12,14 +12,14 @@ def printQuery(query):
       cars_conn.close()
 
 def addColumn(table_name, column_name, column_def):
-      cars_conn = sqlite3.connect('cars.db')
+      cars_conn = sqlite3.connect('CarRental.db')
       c = cars_conn.cursor()
       c.execute(" ALTER TABLE " + table_name + " ADD " + column_name + " " + column_def )
       cars_conn.commit()
       cars_conn.close()
 
 def modifyReturned():
-      cars_conn = sqlite3.connect('cars.db')
+      cars_conn = sqlite3.connect('CarRental.db')
       c = cars_conn.cursor()
       c.execute('''UPDATE RENTAL 
                    SET Returned = CASE
@@ -31,7 +31,7 @@ def modifyReturned():
 
 
 # #CREATE TABLES STATEMENTS
-cars_conn = sqlite3.connect('cars.db')
+cars_conn = sqlite3.connect('CarRental.db')
 c = cars_conn.cursor()
 c.execute(''' CREATE TABLE Customer( 
                 CustID int,Name varchar(25), 
@@ -100,7 +100,7 @@ addColumn("RENTAL", "Returned", "int")
 modifyReturned()
 # printQuery('''SELECT * FROM Rental''')
 
-cars_conn = sqlite3.connect('cars.db')
+cars_conn = sqlite3.connect('CarRental.db')
 c = cars_conn.cursor()
 vRentalInfo=''' CREATE VIEW vRentalInfo AS 
       SELECT 

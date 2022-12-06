@@ -70,7 +70,7 @@ notebook.add(search_vehicle,text="Search Vehicle")
 
 #Requirment 1
 def add_newcustomer():
-      cu_conn = sqlite3.connect('cars.db')
+      cu_conn = sqlite3.connect('CarRental.db')
       cu_cur = cu_conn.cursor()
     
       cu_cur.execute( """INSERT INTO CUSTOMER (Name,Phone,CustID)
@@ -94,7 +94,7 @@ def insert_vehicle():
       if(len(str(vehicle_year.get()))!= 4):
             print("Cannot submit: Invalid Year")
             return False
-      cars_conn = sqlite3.connect('cars.db')
+      cars_conn = sqlite3.connect('CarRental.db')
       cars_cur = cars_conn.cursor()
 
       #Generate 17 digit code not in DB already
@@ -134,7 +134,7 @@ vehicle_submit.grid(row =5, column = 5)
 
 #Requirement 3
 def available_cars():
-      ac_conn = sqlite3.connect('cars.db')
+      ac_conn = sqlite3.connect('CarRental.db')
       ac_cur = ac_conn.cursor()
       ac_cur.execute( """SELECT Distinct Vehicle.VehicleID, Description, 
       Vehicle.Year,Vehicle.Type,Vehicle.Category 
@@ -172,7 +172,7 @@ def make_rental():
       else:
             rental_type = 1
 
-      mr_conn = sqlite3.connect('cars.db')
+      mr_conn = sqlite3.connect('CarRental.db')
       mr_cur = mr_conn.cursor()
 
       mr_cur.execute("""SELECT Weekly,Daily FROM RATE WHERE TYPE = ? AND CATEGORY = ?""",(row[3],row[4]))
@@ -232,7 +232,7 @@ Submit =  Button(add_rental,text="Submit",command=make_rental, justify="center")
 
 #Requiement 4
 def pay_rental(amount):
-      ga_conn = sqlite3.connect('cars.db')
+      ga_conn = sqlite3.connect('CarRental.db')
       ga_cur = ga_conn.cursor()
       ga_cur.execute("""UPDATE Rental SET returned = 1 WHERE CustID = ?
       AND VehicleID = ? AND ReturnDate = ?; """,(amount[0][1],amount[0][2],return_date.get()))
@@ -242,7 +242,7 @@ def pay_rental(amount):
       ga_conn.close()
 
 def get_amount():
-      ga_conn = sqlite3.connect('cars.db')
+      ga_conn = sqlite3.connect('CarRental.db')
       ga_cur = ga_conn.cursor()
       
       ga_cur.execute("""SELECT TotalAmount,Rental.CustID,VehicleID FROM Rental WHERE Rental.CustID = (Select 
@@ -291,7 +291,7 @@ def destroy_labels():
 
 def find_customer():
       locale.setlocale(locale.LC_ALL, '')
-      fc_conn = sqlite3.connect('cars.db')
+      fc_conn = sqlite3.connect('CarRental.db')
       fc_cur = fc_conn.cursor()
 
       try:
@@ -357,7 +357,7 @@ search_customer_button =  Button(search_customer,text="Search",command=find_cust
 #Requirement 5b
 def search_vehicles():
       locale.setlocale(locale.LC_ALL, '')
-      fv_conn = sqlite3.connect('cars.db')
+      fv_conn = sqlite3.connect('CarRental.db')
       fv_cur = fv_conn.cursor()
 
       try:
@@ -417,7 +417,7 @@ submit_vehicle_search = Button(search_vehicle, text="Search", command=search_veh
 
 #query 2
 def query2():
-      cars_conn = sqlite3.connect('cars.db')
+      cars_conn = sqlite3.connect('CarRental.db')
       c = cars_conn.cursor()
       vRentalInfo=''' CREATE VIEW vRentalInfo AS 
       SELECT 
