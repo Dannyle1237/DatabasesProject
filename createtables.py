@@ -86,19 +86,19 @@ cars_conn.commit()
 cars_conn.close()
 
 #Code to print each table and check values
-# printQuery('''SELECT * FROM Customer''')
-# printQuery('''SELECT * FROM Rate''')
-# printQuery('''SELECT * FROM Rental''')
-# printQuery('''SELECT * FROM Vehicle''')
-# printQuery('''SELECT COUNT(*) FROM CUSTOMER''')
-# printQuery('''SELECT COUNT(*) FROM Rate''')
-# printQuery('''SELECT COUNT(*) FROM Rental''')
-# printQuery('''SELECT COUNT(*) FROM Vehicle''')
+printQuery('''SELECT * FROM Customer''')
+printQuery('''SELECT * FROM Rate''')
+printQuery('''SELECT * FROM Rental''')
+printQuery('''SELECT * FROM Vehicle''')
+printQuery('''SELECT COUNT(*) FROM CUSTOMER''')
+printQuery('''SELECT COUNT(*) FROM Rate''')
+printQuery('''SELECT COUNT(*) FROM Rental''')
+printQuery('''SELECT COUNT(*) FROM Vehicle''')
 
- #Task 1 Query 1
+#Task 1 Query 1
 addColumn("RENTAL", "Returned", "int")
 modifyReturned()
-# printQuery('''SELECT * FROM Rental''')
+printQuery('''SELECT * FROM Rental''')
 
 cars_conn = sqlite3.connect('CarRental.db')
 c = cars_conn.cursor()

@@ -147,7 +147,7 @@ def available_cars():
 
       for rental in query:
             car_list.insert(0,rental)
-
+      
       ac_conn.commit()
       ac_conn.close()
 
@@ -295,6 +295,7 @@ def find_customer():
       fc_cur = fc_conn.cursor()
 
       try:
+            print("View dropped")
             fc_cur.execute("""DROP View vRentalInfo;""")
       except:
             pass
@@ -382,7 +383,7 @@ def search_vehicles():
       fv_cur.execute("""SELECT VIN, Vehicle,
       (SELECT ROUND(SUM(Averages)/Count(Averages), 2) FROM 
       (SELECT (CAST(R.TotalAmount as REAL)/(R.Qty*R.RentalType)) as Averages FROM Rental as R WHERE R.VehicleID=VR.VIN)) as Average
-      FROM vRentalInfo as VR Where VIN=? OR Vehicle LIKE ?;""",
+      FROM vRentalInfo as VR Where VIN=? OR Vehicle LIKE ? ORDER BY Average DESC;""",
       (vin_val,like_desc))
 
       vehicles_searched = fv_cur.fetchall()
